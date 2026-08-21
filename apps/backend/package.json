@@ -1,0 +1,18 @@
+{
+  "name": "@local-agent-orchestrator/backend",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "@local-agent-orchestrator/db": "workspace:*",
+    "@types/mongoose": "^5.11.97",
+    "@types/ws": "^8.18.1",
+    "mongoose": "^9.9.3",
+    "ws": "^8.21.3"
+  }
+}
