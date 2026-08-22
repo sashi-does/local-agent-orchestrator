@@ -1,6 +1,4 @@
 import { dbConnect, WorkspaceModel } from "@local-agent-orchestrator/db/client";
-import type { Socket } from "bun";
-import { Types } from "mongoose";
 import { WebSocketServer } from "ws";
 
 

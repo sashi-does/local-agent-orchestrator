@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@local-agent-orchestrator/db": "workspace:*",
+    "@local-agent-orchestrator/types": "workspace:*",
     "@types/mongoose": "^5.11.97",
     "@types/ws": "^8.18.1",
     "mongoose": "^9.9.3",
+    "uuidv4": "^6.2.13",
     "ws": "^8.21.3"
   }
 }

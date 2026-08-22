@@ -25,5 +25,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "local-agent-orchestrator": "."
+  }
 }

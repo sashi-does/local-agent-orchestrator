@@ -7,7 +7,11 @@ const Workspace = new mongoose.Schema({
 
 const Session = new mongoose.Schema({
     conversation: [Object],
-    workspace: [{ type: mongoose.Schema.ObjectId, ref: 'Workspace' }]
+    workspace: { 
+        type: mongoose.Schema.ObjectId, 
+        ref: 'Workspace',
+        required: true
+    }
 });
 
 export const WorkspaceModel = mongoose.model("Workspace", Workspace);
@@ -15,10 +19,10 @@ export const SessionModel =  mongoose.model("Session", Session);
 
 
 
-export const dbConnect: (uri: String) => Promise<typeof mongoose> = (uri: String) => {
+export const dbConnect: (uri: string) => Promise<typeof mongoose> = (uri: String) => {
      if (!uri) {
         throw new Error("URI is not defined");
     }
 
-    return mongoose.connect(uri);
+    return mongoose.connect(uri as string);
 }
