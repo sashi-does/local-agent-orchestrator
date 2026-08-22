@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import {
-    type incomingMessageType,
+    type IncomingMessageType,
     createWorkspaceSchema,
     type OutgoingMessageType,
     createSessionSchema,
@@ -23,7 +23,7 @@ export class User {
     }
 
     async handleIncomingMessage(
-        msg: incomingMessageType
+        msg: IncomingMessageType
     ): Promise<OutgoingMessageType> {
         if (msg.type === "create-workspace") {
             const { success, data } = createWorkspaceSchema.safeParse(msg.payload);
