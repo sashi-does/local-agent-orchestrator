@@ -1,5 +1,6 @@
-import { dbConnect, WorkspaceModel } from "@local-agent-orchestrator/db/client";
+import { dbConnect, WorkspaceModel, SessionModel } from "@local-agent-orchestrator/db/client";
 import { WebSocketServer } from "ws";
+import { UserManager } from "./utils/UserManager";
 
 
 const ws = new WebSocketServer({
@@ -11,9 +12,13 @@ await dbConnect(process.env.URI!);
 console.log("db connected!!")
 
 
-ws.on("connection", (socket) => { 
+const userManager = UserManager.getInstance();
+
+ws.on("connection", async (socket) => { 
     
-    // console.log("Connecetd!!!") 
+    console.log("Connecetd!!!") 
+    await userManager.addUser(socket);
+
     
     socket.on("message", (data: String) => {
         console.log(data);
@@ -23,6 +28,7 @@ ws.on("connection", (socket) => {
             path: "/root"
         })
     })
+
 })  
 
 

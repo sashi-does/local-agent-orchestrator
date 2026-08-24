@@ -36,4 +36,29 @@ export type OutgoingMessageType =
     | {
         type: "message-added";
         payload: MessageAddedSchemaType;
+    }
+    | {
+        type: "init";
+        workspaces: Workspace[];
     };
+
+export type Workspace = {
+    name: string, 
+    path: string,
+    sessions: Session[]
+}
+
+export type Session = {
+    id: string,
+    messages: Message[] 
+}
+
+export type Message = {
+    role: "user",
+    payload: {
+        message: string
+    }
+} | {
+    role: "assistant",
+    payload: any
+};
