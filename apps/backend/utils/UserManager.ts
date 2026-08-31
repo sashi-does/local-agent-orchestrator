@@ -1,6 +1,7 @@
 import { SessionModel, WorkspaceModel } from "@local-agent-orchestrator/db/client";
 import { User } from "./User";
 import WebSocket from "ws";
+import type { Session } from "@local-agent-orchestrator/types";
 
 // singleton
 export class UserManager {
@@ -56,14 +57,15 @@ export class UserManager {
         }
 
         const response = workspaces.map((workspace) => ({
-            workspace,
-            sessions: sessionsByWorkspace.get(
-                workspace._id.toString()
-            ) || []
+            id: workspace._id.toString(),
+            name: workspace.name,
+            path: workspace.path,
+            sessions: (sessionsByWorkspace.get(workspace._id.toString()) || []).map((session: Session) => ({
+                id: session.id.toString(),
+                messages: Array.isArray(session.messages) ? session.messages : [],
+            }))
         }));
 
-        console.log(response);
-        
         socket.send(JSON.stringify({
             type: "init",
             workspaces: response

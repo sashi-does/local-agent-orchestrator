@@ -6,12 +6,24 @@ import type { OutgoingMessageType, Workspace } from "@local-agent-orchestrator/t
 
 function normalizeWorkspace(entry: any): Workspace {
   const workspace = entry?.workspace ?? entry ?? {};
+  const rawSessions = Array.isArray(entry?.sessions)
+    ? entry.sessions
+    : Array.isArray(workspace?.sessions)
+      ? workspace.sessions
+      : [];
 
   return {
     id: String(workspace?._id ?? workspace?.id ?? ""),
     name: workspace?.name ?? workspace?.path?.split("/").pop() ?? "",
     path: workspace?.path ?? "",
-    sessions: Array.isArray(entry?.sessions) ? entry.sessions : [],
+    sessions: rawSessions.map((session: any) => ({
+      id: String(session?._id ?? session?.id ?? ""),
+      messages: Array.isArray(session?.conversation)
+        ? session.conversation
+        : Array.isArray(session?.messages)
+          ? session.messages
+          : [],
+    })),
   };
 }
 
@@ -65,6 +77,24 @@ export function App() {
           }
         } else if (parsedData.type === "workspace-created") {
           setWorkspaces((workspaces) => upsertWorkspace(workspaces, parsedData.payload as Workspace));
+        } else if (parsedData.type === "session-created") {
+          const { id, workspaceId } = parsedData.payload;
+          setWorkspaces((current) =>
+            current.map((workspace) =>
+              workspace.id === workspaceId
+                ? {
+                    ...workspace,
+                    sessions: [
+                      ...((workspace.sessions ?? []).filter((session) => session.id !== id)),
+                      { id, messages: [] },
+                    ],
+                  }
+                : workspace,
+            ),
+          );
+          setSelectedWorkspaceId(workspaceId);
+          setExpandedWorkspaceId(workspaceId);
+          setSelectedSessionId(id);
         }
       };
     }
@@ -77,17 +107,9 @@ export function App() {
   }, [selectedWorkspaceId, workspaces]);
 
   function createSessionFor(workspace: Workspace) {
-    const sessionId = `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    setSelectedSessionId(sessionId);
     setSelectedWorkspaceId(workspace.id);
     setExpandedWorkspaceId(workspace.id);
-    setWorkspaces((current) =>
-      current.map((w) =>
-        w.id === workspace.id
-          ? { ...w, sessions: [...(w.sessions ?? []), { id: sessionId, messages: [] }] }
-          : w,
-      ),
-    );
+    setSelectedSessionId("");
     socket?.send(
       JSON.stringify({ type: "create-session", payload: { workspaceId: workspace.id } }),
     );
@@ -110,7 +132,7 @@ export function App() {
           selectedSessionId={selectedSessionId}
           expandedWorkspaceId={expandedWorkspaceId}
           onSelectWorkspace={(id) => {
-            setSelectedWorkspaceId(id);
+            setSelectedWorkspaceId((current) => (current === id ? "" : id));
             setExpandedWorkspaceId((current) => (current === id ? "" : id));
           }}
           onSelectSession={setSelectedSessionId}
@@ -173,8 +195,10 @@ function Sidebar({
     <aside className="flex w-[280px] shrink-0 flex-col border-r border-white/[0.06]">
       <div className="flex justify-center px-4 pt-8 pb-6">
         <span
-          style={{ fontFamily: "'Anton', sans-serif" }}
-          className="text-[28px] tracking-[-0.02em] leading-none bg-gradient-to-b from-white via-white to-neutral-400 bg-clip-text text-transparent"
+          style={{ 
+            fontFamily: "'Silkscreen', monospace"
+          }}
+          className="text-[32px] tracking-[-0.16em] leading-none bg-gradient-to-b from-white via-white to-neutral-400 bg-clip-text text-transparent"
         >
           LOCALCODE
         </span>
@@ -213,7 +237,7 @@ function Sidebar({
           <div className="px-2 py-6 text-center text-[12px] text-neutral-600">No workspaces yet</div>
         ) : (
           workspaces.map((workspace) => {
-            const isExpanded = expandedWorkspaceId === workspace.id || selectedWorkspaceId === workspace.id;
+            const isExpanded = expandedWorkspaceId === workspace.id;
             const isSelected = selectedWorkspaceId === workspace.id;
             const sessions = workspace.sessions ?? [];
 
@@ -237,7 +261,7 @@ function Sidebar({
                     <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
 
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 cursor-pointer">
                     <div className="truncate text-[13px] text-neutral-200">{workspace.name}</div>
                   </div>
 
@@ -264,7 +288,7 @@ function Sidebar({
                               onSelectSession(session.id);
                             }}
                             className={[
-                              "flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors",
+                              "flex w-full cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors",
                               isActive ? "bg-white/[0.06] text-neutral-100" : "text-neutral-500 hover:bg-white/[0.03] hover:text-neutral-300",
                             ].join(" ")}
                           >
