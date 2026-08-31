@@ -1,6 +1,7 @@
 import { dbConnect, WorkspaceModel, SessionModel } from "@local-agent-orchestrator/db/client";
 import { WebSocketServer } from "ws";
 import { UserManager } from "./utils/UserManager";
+import { User } from "./utils/User";
 
 
 const ws = new WebSocketServer({
@@ -14,22 +15,10 @@ console.log("db connected!!")
 
 const userManager = UserManager.getInstance();
 
-ws.on("connection", async (socket) => { 
-    
-    console.log("Connecetd!!!") 
+ws.on("connection", async (socket) => {
+    console.log("Connected!!!");
     await userManager.addUser(socket);
-
-    
-    socket.on("message", (data: String) => {
-        console.log(data);
-        console.log("damnnn")
-        WorkspaceModel.create({
-            name: "demo", 
-            path: "/root"
-        })
-    })
-
-})  
+});
 
 
 // 1. create message Types

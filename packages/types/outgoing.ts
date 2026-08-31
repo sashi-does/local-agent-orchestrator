@@ -2,7 +2,9 @@ import { z } from "zod";
 
 // validator for backend
 export const workspaceCreatedSchema = z.object({
-    path: z.string()
+    id: z.string(),
+    path: z.string(),
+    name: z.string()
 });
 
 // type for frontend
@@ -10,6 +12,7 @@ export type WorkspaceCreatedSchemaType =
     z.infer<typeof workspaceCreatedSchema>;
 
 export const sessionCreatedSchema = z.object({
+    id: z.string(),
     workspaceId: z.string()
 });
 
@@ -43,6 +46,7 @@ export type OutgoingMessageType =
     };
 
 export type Workspace = {
+    id: string,
     name: string, 
     path: string,
     sessions: Session[]

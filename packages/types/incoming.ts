@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const createWorkspaceSchema = z.object({
-    path: z.string()
+    path: z.string().min(1),
+    name: z.string().optional(),
 });
 
 export type CreateWorkspaceSchemaType =

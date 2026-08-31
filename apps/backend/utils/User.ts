@@ -4,7 +4,8 @@ import {
     createWorkspaceSchema,
     type OutgoingMessageType,
     createSessionSchema,
-    addMessageSchema
+    addMessageSchema,
+    type Workspace
 } from "@local-agent-orchestrator/types/common";
 import { uuid } from "uuidv4";
 import { SessionModel, WorkspaceModel } from "@local-agent-orchestrator/db/client";
@@ -20,6 +21,11 @@ export class User {
 
     async sendMessage(payload: OutgoingMessageType) {
         this.socket.send(JSON.stringify(payload));
+    }
+
+    static async sendWorkspaces(): Promise<Workspace[]> {
+        const workspaces: Workspace[] = await WorkspaceModel.find({});
+        return workspaces;
     }
 
     async handleIncomingMessage(
@@ -40,7 +46,9 @@ export class User {
             return {
                 type: "workspace-created",
                 payload: {
-                    path: workspace.path as string
+                    id: workspace._id.toString(),
+                    path: workspace.path as string,
+                    name: data.path.split("/").pop() as string
                 }
             };
         }
@@ -60,7 +68,8 @@ export class User {
             return {
                 type: "session-created",
                 payload: {
-                    workspaceId: session.workspace.toString()
+                    id: session._id.toString(),
+                    workspaceId: data.workspaceId
                 }
             };
         }
